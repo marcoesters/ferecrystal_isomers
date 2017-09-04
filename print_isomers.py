@@ -31,7 +31,7 @@ iface: A dictionary describing interface conditions. Dictionary keys
                   in the key does not exist. E.g. {'PbSeSnSe': False}
                   omits all isomers with a PbSe-SnSe interface.
 
-           True: Returns any isomers that has the interface(s)
+           True: Returns any isomer that has the interface(s)
                  described in the key. Equivalent to (1, 0)
 
            int: Returns isomers that have exactly 'int' number of
@@ -70,6 +70,7 @@ thickness: A dictionary describing thickness conditions for each
 
 """
 
+from __future__ import division, unicode_literals, print_function
 from ferecrystal_isomers import Isomers
 
 if __name__ == '__main__':

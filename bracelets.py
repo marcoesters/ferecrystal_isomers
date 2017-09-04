@@ -5,14 +5,15 @@ bracelets with fixed content", Theor. Comput. Sci., 2013, 475,
 103 - 112, DOI: 10.1016/j.tcs.2012.11.024
 """
 
+from __future__ import division, unicode_literals, print_function
+from string import ascii_uppercase
+
 __author__ = "Marco Esters"
 __copyright__ = "Copyright 2017, Marco Esters"
 __version__ = "1.0"
 __maintainer__ = "Marco Esters"
 __email__ = "esters@uoregon.edu"
 __date__ = "03/06/2017"
-
-from string import ascii_uppercase
 
 
 class Bracelets(object):
@@ -40,8 +41,8 @@ class Bracelets(object):
 
     def as_string(self):
         string_list = [''] * len(self.bracelets)
-        for b in range(len(self.bracelets)):
-            for s in self.bracelets[b]:
+        for b, brace in enumerate(self.bracelets):
+            for s in brace:
                 string_list[b] += ascii_uppercase[s]
         return string_list
 
@@ -203,16 +204,16 @@ class DoubleLinkedList(object):
             self.prev.append(i+1)
         self._head = self.n_items - 1
 
-    def add(self, i):
+    def add(self, j):
         """
         The 'add(j)' operation as outlined in Karim's publication.
         """
-        n = self.next[i]
-        p = self.prev[i]
-        self.prev[n] = i
-        self.next[p] = i
-        if self.prev[i] == self.n_items:
-            self._head = i
+        n = self.next[j]
+        p = self.prev[j]
+        self.prev[n] = j
+        self.next[p] = j
+        if self.prev[j] == self.n_items:
+            self._head = j
 
     @property
     def head(self):
@@ -221,13 +222,13 @@ class DoubleLinkedList(object):
         """
         return self._head
 
-    def remove(self, i):
+    def remove(self, j):
         """
         The 'remove(j)' operation as outlined in Karim's publication.
         """
-        if i == self._head:
-            self._head = self.next[i]
-        n = self.next[i]
-        p = self.prev[i]
+        if j == self._head:
+            self._head = self.next[j]
+        n = self.next[j]
+        p = self.prev[j]
         self.next[p] = n
         self.prev[n] = p

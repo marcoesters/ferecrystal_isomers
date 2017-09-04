@@ -6,15 +6,16 @@ uses the algorithm by Karim et al. to create bracelets with fixed
 content to create the isomers (see bracelets module for full citation).
 """
 
+from __future__ import division, unicode_literals, print_function
+from bracelets import Bracelets
+from string import ascii_uppercase
+
 __author__ = "Marco Esters"
 __copyright__ = "Copyright 2017, Marco Esters"
 __version__ = "1.0"
 __maintainer__ = "Marco Esters"
 __email__ = "esters@uoregon.edu"
 __date__ = "03/06/2017"
-
-from bracelets import Bracelets
-from string import ascii_uppercase
 
 
 class Isomers(object):
@@ -49,7 +50,7 @@ class Isomers(object):
             if not isinstance(i, int):
                 raise TypeError('Values must be a integers.')
         self._composition = composition
-        if elements is not None:
+        if elements:
             if not (isinstance(elements, list)
                     or isinstance(elements, tuple)):
                 raise TypeError('Elements must be None, list, or tuple.')
@@ -83,12 +84,12 @@ class Isomers(object):
         isomers = []
         for brace in self._bracelets.as_tuple():
             istring = ''
-            for b in range(len(brace)):
+            for b, brc in enumerate(brace):
                 if self._elements is None:
-                    letter = ascii_uppercase[brace[b][0]]
+                    letter = ascii_uppercase[brc[0]]
                 else:
-                    letter = self._elements[brace[b][0]]
-                istring = '%s(%s)%d' % (istring, letter, brace[b][1])
+                    letter = self._elements[brc[0]]
+                istring = '%s(%s)%d' % (istring, letter, brc[1])
                 if b != len(brace) - 1:
                     istring = '%s-' % istring
             isomers.append(istring)
@@ -105,9 +106,9 @@ class Isomers(object):
         isomer_tuples = []
         for isomer in isomers:
             istring = ''
-            for t in range(len(isomer)):
-                istring += '(%s)%d' % (isomer[t][0], isomer[t][1])
-                if t != len(isomer) - 1:
+            for i, iso in enumerate(isomer):
+                istring += '(%s)%d' % (iso[0], iso[1])
+                if i != len(isomer) - 1:
                     istring += '-'
             isomer_tuples.append(istring)
 
@@ -125,8 +126,8 @@ class Isomers(object):
             element_string (string): An isomer as a concatenated string
                 of its constituents.
         """
-        element_indices = {self._elements[i]: i
-                           for i in range(len(self._elements))}
+        element_indices = {element: e
+                           for e, element in enumerate(self._elements)}
         for element in sorted(self._elements[:])[::-1]:
             letter = ascii_uppercase[element_indices[element]]
             element_string = element_string.replace(element, letter)
@@ -146,14 +147,14 @@ class Isomers(object):
         """
         filtered_isomers = []
         inter_cond = interface_conditions.copy()
-        if self._elements is not None:
+        if self._elements:
             for key in inter_cond:
                 newkey = self._transform_to_letter(key)
                 inter_cond[newkey] = inter_cond.pop(key)
         for isomer in isomers:
             append_isomer = True
             istring = ''.join([i[0]*i[1] for i in isomer])
-            if self._elements is not None:
+            if self._elements:
                 istring = self._transform_to_letter(istring)
             for key in inter_cond:
                 val = inter_cond[key]
@@ -186,7 +187,7 @@ class Isomers(object):
                 described in the function 'get_isomer_subset'.
         """
         filtered_isomers = []
-        intvals = {key: False for key in thickness_conditons
+        intvals = {key: False for key in thickness_conditions
                    if type(thickness_conditions[key]) is int}
         for isomer in isomers:
             append_isomer = True
@@ -194,8 +195,9 @@ class Isomers(object):
             for i in isomer:
                 if i[0] in thickness_conditions:
                     val = thickness_conditions[i[0]]
-                    if type(val) is int and i[1] == val:
-                        intvals[i[0]] = True
+                    if type(val) is int:
+                        if i[1] == val:
+                            intvals[i[0]] = True
                     elif i[1] < val[0] or (val[1] > 0 and i[1] > val[1]):
                         append_isomer = False
                         break
@@ -208,9 +210,12 @@ class Isomers(object):
         Returns the chemical formula of the ferecrystal as a string.
         """
         formula_string = ''
-        for i in range(len(self._composition)):
-            formula_string += '(%s)%d' % (self._elements[i],
-                                          self._composition[i])
+        if self._elements:
+            for c, comp in enumerate(self._composition):
+                formula_string += '(%s)%d' % (self._elements[c], comp)
+        else:
+            for c, comp in enumerate(self._composition):
+                formula_string += '(%s)%d' % (ascii_uppercase[c], comp)
         return formula_string
 
     def get_isomer_subset(self,
@@ -276,17 +281,17 @@ class Isomers(object):
                            the element of 'int1'. Can also be a list.
         """
         isomer_subset = self._as_tuples()
-        if thickness_conditions is not None:
+        if thickness_conditions:
             if not isinstance(thickness_conditions, dict):
                 raise ValueError('Thickness conditions must be a dictionary.')
             else:
                 for key in thickness_conditions:
                     val = thickness_conditions[key]
-                    if type(val) is int:
-                        thickness_conditions[key] = [val, val]
+#                    if type(val) is int:
+#                        thickness_conditions[key] = [val, val]
                 isomer_subset = self._filter_thickness(isomer_subset,
                                                        thickness_conditions)
-        if interface_conditions is not None:
+        if interface_conditions:
             if not isinstance(interface_conditions, dict):
                 raise ValueError('Interface conditions must be a dictionary.')
             for key in interface_conditions:
