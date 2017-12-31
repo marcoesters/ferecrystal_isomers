@@ -158,13 +158,12 @@ class Isomers(object):
                 istring = self._transform_to_letter(istring)
             for key in inter_cond:
                 val = inter_cond[key]
-                if type(val) is bool:
+                if isinstance(val, bool):
                     interface = key in istring or key[::-1] in istring
                     if interface != inter_cond[key]:
                         append_isomer = False
                         break
                 else:
-                    istring_extd = istring + istring[0:len(key)-1]
                     occ = istring.count(key)
                     if key != key[::-1]:
                         occ += istring.count(key[::-1])
@@ -188,14 +187,14 @@ class Isomers(object):
         """
         filtered_isomers = []
         intvals = {key: False for key in thickness_conditions
-                   if type(thickness_conditions[key]) is int}
+                   if isinstance(thickness_conditions[key], is int)}
         for isomer in isomers:
             append_isomer = True
             intvals = {key: False for key in intvals}
             for i in isomer:
                 if i[0] in thickness_conditions:
                     val = thickness_conditions[i[0]]
-                    if type(val) is int:
+                    if isinstance(val, int):
                         if i[1] == val:
                             intvals[i[0]] = True
                     elif i[1] < val[0] or (val[1] > 0 and i[1] > val[1]):

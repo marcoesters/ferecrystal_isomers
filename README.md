@@ -3,3 +3,6 @@ This is a Python module to calculate isomers of ferecrystalline compounds. The c
 
 # Usage
 The py files can be used as is and do not require any packages not present in a standard python installation. The easiest way to use this module is to change the 'print_isomers.py' file. Detailed instructions are presented in there.
+
+# Requirements
+The module uses string and copy, which are part of the standard Python installation. For the unittest, the package six is required for Python 2 and 3 compatibility.
