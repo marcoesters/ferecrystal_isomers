@@ -68,7 +68,7 @@ class Isomers(object):
     def _as_tuples(self):
         """
         Converts the bracelets into isomer tuples, i.e. the numbers
-        be replaced with the element strings.
+        are replaced with the element strings.
         """
         isomer_tuples = []
         for brac in self._bracelets.as_tuple():
@@ -94,115 +94,6 @@ class Isomers(object):
                     istring = '%s-' % istring
             isomers.append(istring)
         return isomers
-
-    def _isomers_from_tuples(self, isomers):
-        """
-        Converts the isomer tuples into string. This function converts
-        the output of 'get_isomer_subset' into a list of strings.
-        Args:
-            isomers (list): A list of isomers as tuples.
-
-        """
-        isomer_tuples = []
-        for isomer in isomers:
-            istring = ''
-            for i, iso in enumerate(isomer):
-                istring += '(%s)%d' % (iso[0], iso[1])
-                if i != len(isomer) - 1:
-                    istring += '-'
-            isomer_tuples.append(istring)
-
-        return isomer_tuples
-
-    def _transform_to_letter(self, element_string):
-        """
-        Transforms the isomers strings that use elements instead of
-        uppercase letters into a string of uppercase letters to
-        simplify the interface filter. The function sorts the elements
-        by length in reverse order so that e.g. 'SnSe2' is not seen as
-        'SnSe' by the algorithm.
-
-        Args:
-            element_string (string): An isomer as a concatenated string
-                of its constituents.
-        """
-        element_indices = {element: e
-                           for e, element in enumerate(self._elements)}
-        for element in sorted(self._elements[:])[::-1]:
-            letter = ascii_uppercase[element_indices[element]]
-            element_string = element_string.replace(element, letter)
-        return element_string
-
-    def _filter_interface(self, isomers, interface_conditions):
-        """
-        A function to return only the isomers that satisfy the
-        thickness conditions.
-
-        Args:
-            isomers (list): A list of tuples with either all isomers or
-                            the isomers that remain after going through
-                            the thickness filter.
-            interface_conditions (dict): The interface conditions as
-                described in the function 'get_isomer_subset'.
-        """
-        filtered_isomers = []
-        inter_cond = interface_conditions.copy()
-        if self._elements:
-            for key in inter_cond:
-                newkey = self._transform_to_letter(key)
-                inter_cond[newkey] = inter_cond.pop(key)
-        for isomer in isomers:
-            append_isomer = True
-            istring = ''.join([i[0]*i[1] for i in isomer])
-            if self._elements:
-                istring = self._transform_to_letter(istring)
-            for key in inter_cond:
-                val = inter_cond[key]
-                if isinstance(val, bool):
-                    interface = key in istring or key[::-1] in istring
-                    if interface != inter_cond[key]:
-                        append_isomer = False
-                        break
-                else:
-                    occ = istring.count(key)
-                    if key != key[::-1]:
-                        occ += istring.count(key[::-1])
-
-                    if occ < val[0] or (val[1] > 0 and occ > val[1]):
-                        append_isomer = False
-                        break
-            if append_isomer:
-                filtered_isomers.append(isomer)
-        return filtered_isomers
-
-    def _filter_thickness(self, isomers, thickness_conditions):
-        """
-        A function to return only the isomers that satisfy the
-        thickness conditions.
-
-        Args:
-            isomers (list): All isomers as a list of tuples.
-            thickness_conditions (dict): The thickness conditions as
-                described in the function 'get_isomer_subset'.
-        """
-        filtered_isomers = []
-        intvals = {key: False for key in thickness_conditions
-                   if isinstance(thickness_conditions[key], is int)}
-        for isomer in isomers:
-            append_isomer = True
-            intvals = {key: False for key in intvals}
-            for i in isomer:
-                if i[0] in thickness_conditions:
-                    val = thickness_conditions[i[0]]
-                    if isinstance(val, int):
-                        if i[1] == val:
-                            intvals[i[0]] = True
-                    elif i[1] < val[0] or (val[1] > 0 and i[1] > val[1]):
-                        append_isomer = False
-                        break
-            if append_isomer and False not in intvals.values():
-                filtered_isomers.append(isomer)
-        return filtered_isomers
 
     def get_formula(self):
         """
@@ -279,6 +170,97 @@ class Isomers(object):
                 (int1, 0): Returns isomers with a minimum thickness of
                            the element of 'int1'. Can also be a list.
         """
+
+        def transform_to_letter(element_string):
+            """
+            Transforms the isomers strings that use elements instead of
+            uppercase letters into a string of uppercase letters to
+            simplify the interface filter. The function sorts the elements
+            by length in reverse order so that e.g. 'SnSe2' is not seen as
+            'SnSe' by the algorithm.
+
+            Args:
+                element_string (string): An isomer as a concatenated string
+                    of its constituents.
+            """
+            element_indices = {element: e
+                               for e, element in enumerate(self._elements)}
+            for element in sorted(self._elements[:])[::-1]:
+                letter = ascii_uppercase[element_indices[element]]
+                element_string = element_string.replace(element, letter)
+            return element_string
+
+        def filter_interface(isomers, interface_conditions):
+            """
+            A function to return only the isomers that satisfy the
+            thickness conditions.
+
+            Args:
+                isomers (list): A list of tuples with either all isomers or
+                                the isomers that remain after going through
+                                the thickness filter.
+                interface_conditions (dict): The interface conditions as
+                    described in the function 'get_isomer_subset'.
+            """
+            filtered_isomers = []
+            inter_cond = interface_conditions.copy()
+            if self._elements:
+                for key in inter_cond:
+                    newkey = transform_to_letter(key)
+                    inter_cond[newkey] = inter_cond.pop(key)
+            for isomer in isomers:
+                append_isomer = True
+                istring = ''.join([i[0]*i[1] for i in isomer])
+                if self._elements:
+                    istring = transform_to_letter(istring)
+                for key in inter_cond:
+                    val = inter_cond[key]
+                    if isinstance(val, bool):
+                        interface = key in istring or key[::-1] in istring
+                        if interface != inter_cond[key]:
+                            append_isomer = False
+                            break
+                    else:
+                        occ = istring.count(key)
+                        if key != key[::-1]:
+                            occ += istring.count(key[::-1])
+
+                        if occ < val[0] or (val[1] > 0 and occ > val[1]):
+                            append_isomer = False
+                            break
+                if append_isomer:
+                    filtered_isomers.append(isomer)
+            return filtered_isomers
+
+        def filter_thickness(isomers, thickness_conditions):
+            """
+            A function to return only the isomers that satisfy the
+            thickness conditions.
+
+            Args:
+                isomers (list): All isomers as a list of tuples.
+                thickness_conditions (dict): The thickness conditions as
+                    described in the function 'get_isomer_subset'.
+            """
+            filtered_isomers = []
+            intvals = {key: False for key in thickness_conditions
+                       if isinstance(thickness_conditions[key], int)}
+            for isomer in isomers:
+                append_isomer = True
+                intvals = {key: False for key in intvals}
+                for i in isomer:
+                    if i[0] in thickness_conditions:
+                        val = thickness_conditions[i[0]]
+                        if isinstance(val, int):
+                            if i[1] == val:
+                                intvals[i[0]] = True
+                        elif i[1] < val[0] or (val[1] > 0 and i[1] > val[1]):
+                            append_isomer = False
+                            break
+                if append_isomer and False not in intvals.values():
+                    filtered_isomers.append(isomer)
+            return filtered_isomers
+
         isomer_subset = self._as_tuples()
         if thickness_conditions:
             if not isinstance(thickness_conditions, dict):
@@ -286,10 +268,8 @@ class Isomers(object):
             else:
                 for key in thickness_conditions:
                     val = thickness_conditions[key]
-#                    if type(val) is int:
-#                        thickness_conditions[key] = [val, val]
-                isomer_subset = self._filter_thickness(isomer_subset,
-                                                       thickness_conditions)
+                isomer_subset = filter_thickness(isomer_subset,
+                                                 thickness_conditions)
         if interface_conditions:
             if not isinstance(interface_conditions, dict):
                 raise ValueError('Interface conditions must be a dictionary.')
@@ -297,9 +277,18 @@ class Isomers(object):
                 val = interface_conditions[key]
                 if type(val) is int:
                     interface_conditions[key] = [val, val]
-            isomer_subset = self._filter_interface(isomer_subset,
-                                                   interface_conditions)
-        return self._isomers_from_tuples(isomer_subset)
+            isomer_subset = filter_interface(isomer_subset,
+                                             interface_conditions)
+        # Return isomers in the form of tuples
+        isomer_tuples = []
+        for isomer in isomer_subset:
+            istring = ''
+            for i, iso in enumerate(isomer):
+                istring += '(%s)%d' % (iso[0], iso[1])
+                if i != len(isomer) - 1:
+                    istring += '-'
+            isomer_tuples.append(istring)
+        return isomer_tuples
 
     @property
     def isomers(self):
