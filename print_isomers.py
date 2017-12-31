@@ -82,15 +82,15 @@ if __name__ == '__main__':
     formula = isomers.get_formula()
 
     if iface is None and thickness is None:
-        print "Number of isomers for %s: %d" % (formula, len(isomers.isomers))
-        print "Printing all isomers:"
+        print("Number of isomers for %s: %d" % (formula, len(isomers.isomers)))
+        print("Printing all isomers:")
         for isomer in isomers.isomers:
-            print isomer
+            print(isomer)
     else:
         subset = isomers.get_isomer_subset(interface_conditions=iface,
                                            thickness_conditions=thickness)
-        print "Number of isomers for %s"\
-              " with selected conditions: %d" % (formula, len(subset))
-        print "Printing subset:"
+        print("Number of isomers for %s"\
+              " with selected conditions: %d" % (formula, len(subset)))
+        print("Printing subset:")
         for isomer in subset:
-            print isomer
+            print(isomer)

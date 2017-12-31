@@ -2,7 +2,6 @@ import unittest
 from bracelets import Bracelets, DoubleLinkedList
 from copy import deepcopy
 from ferecrystal_isomers import Isomers
-from string import ascii_uppercase
 
 
 class IsomerTest(unittest.TestCase):
@@ -61,7 +60,7 @@ class IsomerTest(unittest.TestCase):
         ifact = {'VSe2SnSe': (5, 5)}
         sub_t = self.isomers.get_isomer_subset(interface_conditions=ifact)
         self.assertEqual(sub_i, sub_t)
-        
+
 
 class BraceletTest(unittest.TestCase):
     """
