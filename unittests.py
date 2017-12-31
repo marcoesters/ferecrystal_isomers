@@ -1,3 +1,4 @@
+import six
 import unittest
 from bracelets import Bracelets, DoubleLinkedList
 from copy import deepcopy
@@ -83,7 +84,7 @@ class BraceletTest(unittest.TestCase):
 
     def test_as_string(self):
         brac = ['ABBCCC', 'ABCBCC', 'ABCCBC', 'ABCCCB', 'ACBBCC', 'ACBCBC']
-        self.assertIsInstance(self.bracelets.as_string()[0], basestring)
+        self.assertIsInstance(self.bracelets.as_string()[0], six.string_types)
         self.assertEqual(self.bracelets.as_string(), brac)
 
     def test_as_tuple(self):

@@ -68,6 +68,40 @@ class Bracelets(object):
         return self._bracelets
 
     def build_bracelets(self, a, dll, lenenc, run, t, p, r, z, b, RS):
+        def check_rev(lenenc):
+            i = 1
+            m = lenenc[0]
+            while lenenc[i] == lenenc[m-i+1] and i <= m/2:
+                i += 1
+            if i > m/2:
+                return 0
+            if lenenc[i][0] < lenenc[m-i+1][0]:
+                return 1
+            if lenenc[i][0] > lenenc[m-i+1][0]:
+                return -1
+            if ((lenenc[i][1] < lenenc[m-i+1][1]
+                 and lenenc[i+1][0] < lenenc[m-i+1][0])
+                or (lenenc[i][1] > lenenc[m-i+1][1]
+                    and lenenc[i][0] < lenenc[m-i][0])):
+                return 1
+            return -1
+
+        def restore_run_length(lenenc):
+            if lenenc[-1][1] == 1:
+                lenenc[0] -= 1
+                del lenenc[-1]
+            else:
+                lenenc[-1][1] -= 1
+            return lenenc
+
+        def update_run_length(j, lenenc):
+            if lenenc[-1][0] == j:
+                lenenc[-1][1] += 1
+            else:
+                lenenc[0] += 1
+                lenenc.append([j, 1])
+            return lenenc
+
         if t - 1 > r + (dll.n_tot-r)/2:
             if a[t-2] > a[dll.n_tot-t+r+1]:
                 RS = False
@@ -94,7 +128,7 @@ class Bracelets(object):
             j = dll.head
             while j >= a[t-p-1]:
                 run[z-1] = t - z
-                lenenc = self.update_run_length(j, lenenc)
+                lenenc = update_run_length(j, lenenc)
                 dll.n[j] -= 1
                 if dll.n[j] == 0:
                     dll.remove(j)
@@ -108,7 +142,7 @@ class Bracelets(object):
                 else:
                     p2 = p
 
-                c = self.check_rev(lenenc)
+                c = check_rev(lenenc)
                 if c == 0:
                     for brac in self.build_bracelets(a[:], dll, lenenc,
                                                      run, t + 1, p2, t,
@@ -124,28 +158,10 @@ class Bracelets(object):
                 if dll.n[j] == 0:
                     dll.add(j)
                 dll.n[j] += 1
-                lenenc = self.restore_run_length(lenenc)
+                lenenc = restore_run_length(lenenc)
                 j = dll.next[j]
 
             a[t-1] = dll.n_tot - 1
-
-    def check_rev(self, lenenc):
-        i = 1
-        m = lenenc[0]
-        while lenenc[i] == lenenc[m-i+1] and i <= m/2:
-            i += 1
-        if i > m/2:
-            return 0
-        if lenenc[i][0] < lenenc[m-i+1][0]:
-            return 1
-        if lenenc[i][0] > lenenc[m-i+1][0]:
-            return -1
-        if ((lenenc[i][1] < lenenc[m-i+1][1]
-             and lenenc[i+1][0] < lenenc[m-i+1])
-            or (lenenc[i][1] > lenenc[m-i+1][1]
-                and lenenc[i][0] < lenenc[m-i][0])):
-            return 1
-        return -1
 
     def get_bracelets(self, dll):
         run = [0] * dll.n_tot
@@ -160,24 +176,6 @@ class Bracelets(object):
         for brac in self.build_bracelets(a, dll, lenenc, run,
                                          2, 1, 1, 2, 1, False):
             yield brac
-
-    def restore_run_length(self, lenenc):
-        if lenenc[-1][1] == 1:
-            lenenc[0] -= 1
-            del lenenc[-1]
-        else:
-            lenenc[-1][1] -= 1
-
-        return lenenc
-
-    def update_run_length(self, j, lenenc):
-        if lenenc[-1][0] == j:
-            lenenc[-1][1] += 1
-        else:
-            lenenc[0] += 1
-            lenenc.append([j, 1])
-
-        return lenenc
 
 
 class DoubleLinkedList(object):
