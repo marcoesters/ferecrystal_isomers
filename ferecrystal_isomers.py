@@ -275,7 +275,7 @@ class Isomers(object):
                 raise ValueError('Interface conditions must be a dictionary.')
             for key in interface_conditions:
                 val = interface_conditions[key]
-                if type(val) is int:
+                if isinstance(val, int):
                     interface_conditions[key] = [val, val]
             isomer_subset = filter_interface(isomer_subset,
                                              interface_conditions)
